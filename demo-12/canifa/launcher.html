@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CANIFA SCORM launcher</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; font-family: Montserrat, system-ui, sans-serif; }
+  iframe { display: block; border: 0; width: 100%; height: 100%; }
+  .msg { padding: 24px; color: #333E48; text-align: center; }
+</style>
+<!-- The SCORM runtime runs HERE, on the content origin, next to the SCO, so every API call is
+     synchronous and exact. Only commit snapshots cross to the Learning Hub, by postMessage. -->
+<script src="scorm12.min.js"></script>
+</head>
+<body>
+<p class="msg" id="msg">Đang mở bài học…</p>
+<script>
+(function () {
+  'use strict';
+  var VERSION = "1.2";           // '1.2' or '2004', written by tools/scorm-import.cjs
+  var q = new URLSearchParams(location.search);
+  var lms = q.get('lms') || '';
+  var entry = q.get('entry') || "index.html";
+  var msg = document.getElementById('msg');
+
+  // The LMS must be an https origin (Apps Script: *.googleusercontent.com) or a local test origin.
+  if (!/^https:\/\/[a-z0-9.-]+$/i.test(lms) && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(lms)) {
+    msg.textContent = 'Không mở được bài: nguồn ứng dụng không hợp lệ.'; return;
+  }
+  // The entry is a path inside this package only.
+  if (/^[a-z][a-z0-9+.-]*:|^\/\/|(^|\/)\.\.(\/|$)/i.test(entry)) {
+    msg.textContent = 'Không mở được bài: đường dẫn không hợp lệ.'; return;
+  }
+  if (window.parent === window) { msg.textContent = 'Hãy mở bài học từ CANIFA Learning Hub.'; return; }
+
+  var api = null, seq = 0, started = false, initialized = false, terminated = false;
+
+  function post(type, data) { window.parent.postMessage({ canifa: 'scorm', type: type, data: data || null }, lms); }
+
+  // scorm-again hands every commit (manual, autocommit, terminate) to this service.
+  var http = {
+    processHttpRequest: function (url, params, immediate, log, listeners, meta) {
+      seq++;
+      post('commit', {
+        seq: seq, terminate: !!(meta && meta.isTerminateCommit), trigger: (meta && meta.trigger) || 'manual',
+        cmi: (params && params.cmi) || params
+      });
+      return { result: 'true', errorCode: 0 };
+    },
+    updateSettings: function () {}
+  };
+
+  function start(init) {
+    if (started) return;
+    started = true;
+    var Ctor = VERSION === '2004' ? window.Scorm2004API : window.Scorm12API;
+    if (!Ctor) { msg.textContent = 'Không tải được trình chạy SCORM.'; post('error', { code: 'runtime' }); return; }
+    api = new Ctor({
+      lmsCommitUrl: 'canifa://commit', httpService: http, sendFullCommit: true,
+      autocommit: true, autocommitSeconds: 15, logLevel: 4
+    });
+    if (init && init.cmi) api.loadFromJSON(init.cmi, 'cmi');
+    var on = VERSION === '2004'
+      ? { init: 'Initialize', fin: 'Terminate' }
+      : { init: 'LMSInitialize', fin: 'LMSFinish' };
+    api.on(on.init, function () { initialized = true; post('event', { name: 'initialize' }); });
+    api.on(on.fin, function () { terminated = true; post('event', { name: 'terminate' }); });
+    if (VERSION === '2004') window.API_1484_11 = api; else window.API = api;
+
+    var frame = document.createElement('iframe');
+    frame.title = 'Nội dung bài học';
+    frame.src = '../' + entry;
+    msg.remove();
+    document.body.appendChild(frame);
+    post('ready', { version: VERSION });
+  }
+
+  /** Commit what the learner has done so far (closing the lesson, leaving the page). */
+  function flush(reason) {
+    if (!api || !initialized || terminated) return;
+    try {
+      if (VERSION === '2004') api.Commit(''); else api.LMSCommit('');
+    } catch (e) { /* nothing more to do while unloading */ }
+    post('event', { name: 'flush', reason: reason });
+  }
+
+  window.addEventListener('message', function (ev) {
+    if (ev.source !== window.parent || ev.origin !== lms) return;
+    var m = ev.data;
+    if (!m || m.canifa !== 'scorm') return;
+    if (m.type === 'init') start(m.data);
+    else if (m.type === 'flush') flush('lms');
+  });
+  window.addEventListener('pagehide', function () { flush('pagehide'); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush('hidden'); });
+
+  post('hello', { version: VERSION });
+})();
+</script>
+</body>
+</html>

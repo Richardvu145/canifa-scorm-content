@@ -1,0 +1,18 @@
+{
+  "key": "demo-2004",
+  "title": "[Kiểm thử] SCORM 2004 – Kiến thức sản phẩm",
+  "version": "2004",
+  "entry": "index.html",
+  "scos": [
+    {
+      "item": "ITEM1",
+      "title": "Chất liệu cotton",
+      "type": "sco",
+      "entry": "index.html",
+      "parameters": ""
+    }
+  ],
+  "warnings": [],
+  "runtime": "scorm-again@3.5.0/scorm2004.min.js",
+  "importedAt": "2026-11-18T00:21:56.990Z"
+}

@@ -1,0 +1,18 @@
+{
+  "key": "demo-12",
+  "title": "[Kiểm thử] SCORM 1.2 – Đón khách",
+  "version": "1.2",
+  "entry": "index.html",
+  "scos": [
+    {
+      "item": "ITEM1",
+      "title": "Đón khách trong 30 giây đầu",
+      "type": "sco",
+      "entry": "index.html",
+      "parameters": ""
+    }
+  ],
+  "warnings": [],
+  "runtime": "scorm-again@3.5.0/scorm12.min.js",
+  "importedAt": "2026-11-18T00:21:56.952Z"
+}
