@@ -3,16 +3,24 @@
   "title": "[Kiểm thử] SCORM 1.2 – Đón khách",
   "version": "1.2",
   "entry": "index.html",
+  "launch": {
+    "mastery_score": "70",
+    "launch_data": "store=demo"
+  },
   "scos": [
     {
       "item": "ITEM1",
       "title": "Đón khách trong 30 giây đầu",
       "type": "sco",
       "entry": "index.html",
-      "parameters": ""
+      "parameters": "",
+      "launch": {
+        "mastery_score": "70",
+        "launch_data": "store=demo"
+      }
     }
   ],
   "warnings": [],
   "runtime": "scorm-again@3.5.0/scorm12.min.js",
-  "importedAt": "2026-11-18T01:18:04.611Z"
+  "importedAt": "2026-11-18T01:31:12.828Z"
 }

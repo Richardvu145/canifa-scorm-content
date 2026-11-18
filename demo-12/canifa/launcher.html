@@ -22,6 +22,7 @@
   var q = new URLSearchParams(location.search);
   var lms = q.get('lms') || '';
   var entry = q.get('entry') || "index.html";
+  var LAUNCH = {"mastery_score":"70","launch_data":"store=demo"};             // manifest values for the SCO (mastery score, launch data, …)
   var msg = document.getElementById('msg');
 
   // The LMS must be an https origin (Apps Script: *.googleusercontent.com) or a local test origin.
@@ -60,7 +61,20 @@
       lmsCommitUrl: 'canifa://commit', httpService: http, sendFullCommit: true,
       autocommit: true, autocommitSeconds: 15, logLevel: 4
     });
-    if (init && init.cmi) api.loadFromJSON(init.cmi, 'cmi');
+    var cmi = (init && init.cmi) || {};
+    // Values from imsmanifest.xml: the package decides them, not the saved record.
+    var L = (LAUNCH && typeof LAUNCH === 'object') ? LAUNCH : {};
+    if (L.launch_data) cmi.launch_data = L.launch_data;
+    if (VERSION === '2004') {
+      if (L.completion_threshold) cmi.completion_threshold = L.completion_threshold;
+      if (L.scaled_passing_score) cmi.scaled_passing_score = L.scaled_passing_score;
+    } else {
+      var sd = cmi.student_data = cmi.student_data || {};
+      if (L.mastery_score) sd.mastery_score = L.mastery_score;
+      if (L.max_time_allowed) sd.max_time_allowed = L.max_time_allowed;
+      if (L.time_limit_action) sd.time_limit_action = L.time_limit_action;
+    }
+    api.loadFromJSON(cmi, 'cmi');
     var on = VERSION === '2004'
       ? { init: 'Initialize', fin: 'Terminate' }
       : { init: 'LMSInitialize', fin: 'LMSFinish' };

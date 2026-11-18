@@ -21,7 +21,9 @@
     success: call('GetValue', 'cmi.success_status'),
     learnerId: call('GetValue', 'cmi.learner_id'),
     learnerName: call('GetValue', 'cmi.learner_name'),
-    totalTime: call('GetValue', 'cmi.total_time')
+    totalTime: call('GetValue', 'cmi.total_time'),
+    threshold: call('GetValue', 'cmi.completion_threshold'),
+    launchData: call('GetValue', 'cmi.launch_data')
   };
   var page = parseInt(sco.resume.location || '0', 10) || 0;
   document.getElementById('status').textContent = 'Trang ' + page + (sco.resume.entry === 'resume' ? ' (học tiếp)' : '');

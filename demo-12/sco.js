@@ -21,7 +21,9 @@
     status: call('LMSGetValue', 'cmi.core.lesson_status'),
     studentId: call('LMSGetValue', 'cmi.core.student_id'),
     studentName: call('LMSGetValue', 'cmi.core.student_name'),
-    totalTime: call('LMSGetValue', 'cmi.core.total_time')
+    totalTime: call('LMSGetValue', 'cmi.core.total_time'),
+    mastery: call('LMSGetValue', 'cmi.student_data.mastery_score'),
+    launchData: call('LMSGetValue', 'cmi.launch_data')
   };
   var page = parseInt(sco.resume.location || '0', 10) || 0;
   document.getElementById('status').textContent = 'Trang ' + page + (sco.resume.entry === 'resume' ? ' (học tiếp)' : '');
