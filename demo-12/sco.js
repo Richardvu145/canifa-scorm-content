@@ -49,4 +49,7 @@
   document.getElementById('next').onclick = function () { sco.next(); };
   document.getElementById('pass').onclick = function () { sco.pass(85); };
   document.getElementById('done').onclick = function () { sco.finish(false); };
+  document.getElementById('pause').onclick = function () { sco.finish(true); document.getElementById('status').textContent = 'Đã tạm dừng. Bấm Thoát rồi mở lại để học tiếp.'; };
+  // What the LMS handed over at launch, for checking by eye on a real device.
+  document.getElementById('state').textContent = Object.keys(sco.resume).map(function (k) { return k + ': ' + (sco.resume[k] === '' ? '(trống)' : sco.resume[k]); }).join('\n') + '\nInitialize: ' + sco.init;
 })();
